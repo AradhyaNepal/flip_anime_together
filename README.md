@@ -1,4 +1,4 @@
-# flip_game
+# flip_anime_together
 
 A new Flutter project.
 

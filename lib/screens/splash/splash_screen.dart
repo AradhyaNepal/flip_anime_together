@@ -1,4 +1,4 @@
-import 'package:flip_game/screens/menu/menu_screen.dart';
+import 'package:flip_anime_together/screens/menu/menu_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -203,7 +203,7 @@ class _SplashScreenState extends State<SplashScreen>
                           value: _animationController.value,
                           minHeight: 10.h,
                           backgroundColor: Colors.white,
-                          color: Theme.of(context).backgroundColor,
+                          color: Theme.of(context).colorScheme.background,
                         ),
                       ),
                       SizedBox(height: 5.h),
