@@ -56,12 +56,12 @@ class _GameScreenComState extends State<GameScreenCom>
 
   @override
   void initState() {
-    images = listOfItems..shuffle();
+    images = boardItems..shuffle();
     setPlayers();
     player = numberOfPlayers[0];
     setPlayerBgColor();
     flipController.clear();
-    flipController = List.generate(listOfItems.length, (i) => FlipController());
+    flipController = List.generate(boardItems.length, (i) => FlipController());
     // compFlipController = [...flipController];
     colorAnimation = AnimationController(
       duration: const Duration(milliseconds: 200),
@@ -153,12 +153,12 @@ class _GameScreenComState extends State<GameScreenCom>
             flipController[nextFirstIndex].flip();
             twoTaps.add(nextFirstIndex);
             totalItems.add(nextFirstIndex);
-            twoTapsElement.add(listOfItems[nextFirstIndex]);
+            twoTapsElement.add(boardItems[nextFirstIndex]);
             await Future.delayed(const Duration(milliseconds: 500), () async {
               flipController[nextSecondIndex].flip();
               twoTaps.add(nextSecondIndex);
               totalItems.add(nextSecondIndex);
-              twoTapsElement.add(listOfItems[nextSecondIndex]);
+              twoTapsElement.add(boardItems[nextSecondIndex]);
             }).then((value) async {
               if (twoTaps.length == 2) {
                 if (twoTapsElement[0] == twoTapsElement[1]) {
@@ -174,7 +174,7 @@ class _GameScreenComState extends State<GameScreenCom>
                       comScore++;
                     });
                   }
-                  if (listOfItems.length != totalItems.length) {
+                  if (boardItems.length != totalItems.length) {
                     twoTaps.clear();
                     twoTapsElement.clear();
                     setState(() {});
@@ -267,7 +267,7 @@ class _GameScreenComState extends State<GameScreenCom>
       player = numberOfPlayers[0];
       player1Score = 0;
       comScore = 0;
-      images = listOfItems..shuffle();
+      images = boardItems..shuffle();
       totalItems.clear();
       gameStarted = false;
       comMemory.clear();
@@ -356,7 +356,7 @@ class _GameScreenComState extends State<GameScreenCom>
                                       flipController[index].flip();
                                       twoTaps.add(index);
                                       totalItems.add(index);
-                                      twoTapsElement.add(listOfItems[index]);
+                                      twoTapsElement.add(boardItems[index]);
                                       if (twoTaps.length == 2) {
                                         if (twoTapsElement[0] ==
                                             twoTapsElement[1]) {
@@ -380,7 +380,7 @@ class _GameScreenComState extends State<GameScreenCom>
                                           //     comScore++;
                                           //   });
                                           // }
-                                          if (listOfItems.length !=
+                                          if (boardItems.length !=
                                               totalItems.length) {
                                             twoTaps.clear();
                                             twoTapsElement.clear();
@@ -462,14 +462,14 @@ class _GameScreenComState extends State<GameScreenCom>
                     ),
                   ),
                 ),
-                if (totalItems.length == listOfItems.length)
+                if (totalItems.length == boardItems.length)
                   Center(
                     child: GameEndWidget(
                       onPlayTap: () => resetGame(),
                       onMenuTap: const MenuScreen(),
                     ),
                   ),
-                if (totalItems.length == listOfItems.length)
+                if (totalItems.length == boardItems.length)
                   (player1Score > comScore)
                       ? Align(
                           alignment: Alignment.topLeft,

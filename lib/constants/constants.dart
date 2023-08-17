@@ -14,7 +14,7 @@ enum GameMode {
   extreme,
 }
 
-List listOfItems = [
+List boardItems = [
   'assets/images/bg1.jpg',
   'assets/images/bg1.jpg',
   'assets/images/yugi2.png',

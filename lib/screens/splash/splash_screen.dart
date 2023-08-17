@@ -27,7 +27,7 @@ class _SplashScreenState extends State<SplashScreen>
     )..addListener(() {
         setState(() {});
       });
-    images = listOfItems..shuffle();
+    images = boardItems..shuffle();
     flipController.clear();
     flipController = List.generate(4, (i) => FlipController());
     startAnimation();

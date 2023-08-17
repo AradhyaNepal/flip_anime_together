@@ -39,12 +39,12 @@ class _GameScreenState extends State<GameScreen>
 
   @override
   void initState() {
-    images = listOfItems..shuffle();
+    images = boardItems..shuffle();
     setPlayers();
     player = numberOfPlayers[0];
     setPlayerBgColor();
     flipController.clear();
-    flipController = List.generate(listOfItems.length, (i) => FlipController());
+    flipController = List.generate(boardItems.length, (i) => FlipController());
     colorAnimation = AnimationController(
       duration: const Duration(milliseconds: 200),
       vsync: this,
@@ -99,7 +99,7 @@ class _GameScreenState extends State<GameScreen>
       player2Score = 0;
       player3Score = 0;
       player4Score = 0;
-      images = listOfItems..shuffle();
+      images = boardItems..shuffle();
       totalItems.clear();
       gameStarted = false;
     });
@@ -213,7 +213,7 @@ class _GameScreenState extends State<GameScreen>
                                         name: 'flipedd');
                                     twoTaps.add(index);
                                     totalItems.add(index);
-                                    twoTapsElement.add(listOfItems[index]);
+                                    twoTapsElement.add(boardItems[index]);
                                     if (twoTaps.length == 2) {
                                       if (twoTapsElement[0] ==
                                           twoTapsElement[1]) {
@@ -237,7 +237,7 @@ class _GameScreenState extends State<GameScreen>
                                             player4Score++;
                                           });
                                         }
-                                        if (listOfItems.length !=
+                                        if (boardItems.length !=
                                             totalItems.length) {
                                           twoTaps.clear();
                                           twoTapsElement.clear();
@@ -274,7 +274,7 @@ class _GameScreenState extends State<GameScreen>
                                     }
                                   } else {
                                     if (totalItems.length ==
-                                        listOfItems.length) {}
+                                        boardItems.length) {}
                                   }
                                 },
                                 child: FlipAnimation(
@@ -342,14 +342,14 @@ class _GameScreenState extends State<GameScreen>
                     ),
                   ),
                 ),
-                if (totalItems.length == listOfItems.length)
+                if (totalItems.length == boardItems.length)
                   Center(
                     child: GameEndWidget(
                       onPlayTap: () => resetGame(),
                       onMenuTap: null,
                     ),
                   ),
-                if (totalItems.length == listOfItems.length)
+                if (totalItems.length == boardItems.length)
                   (player1Score > player2Score &&
                           player1Score > player3Score &&
                           player1Score > player4Score)

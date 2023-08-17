@@ -1,24 +1,24 @@
+import 'dart:async';
 import 'dart:developer';
 import 'dart:math' as math;
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flip_anime_together/widgets/custom_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
 import '../../constants/constants.dart';
 import '../../widgets/flip_animation.dart';
 import '../../widgets/game_end_widget.dart';
 import '../../widgets/player_widget.dart';
+import 'board_event.dart';
 //Song: My Mind goes salalalala
 
 class GameBoard extends StatefulWidget {
+  final StreamController<BoardEvent> boardController;
   final List<Players> players;
-  final AudioPlayer bgm;
 
   const GameBoard({
     super.key,
-    required this.bgm,
     required this.players,
+    required this.boardController,
   });
 
   @override
@@ -28,34 +28,37 @@ class GameBoard extends StatefulWidget {
 class _GameBoardState extends State<GameBoard>
     with SingleTickerProviderStateMixin {
   List<FlipController> _flipController = [];
-  final List _twoTaps = [];
-  final List _twoTapsElement = [];
-  final List _totalItems = [];
-  List<dynamic> _images = [];
+
+  ///On user's turn they have tap two elements to check whether they match.
+  ///This list stores the index of the two elements pressed
+  final List<int> _twoTapsIndex = [];
+
+
+  final List _alreadyFlippedItems = [];
+  List<String> _allBoardItems = [];
+
   int _playerIndex = 0;
   List<int> _playerScoreList = [];
-
-  final List<Color> _bgColor = [];
-  late AnimationController _colorAnimation;
+  final List<Color> _backgroundColor = [];
+  late AnimationController _animationController;
   late Animation<double> _animation;
+
   @override
   void initState() {
     super.initState();
-    _images = listOfItems..shuffle();
+    _allBoardItems = [...boardItems]..shuffle();
     _setInitialScore();
-    _setPlayerBgColor();
-    _flipController =
-        List.generate(listOfItems.length, (i) => FlipController());
-    _colorAnimation = AnimationController(
+    _backgroundColor.addAll(playerBgColor);
+    _flipController = List.generate(boardItems.length, (i) => FlipController());
+    _animationController = AnimationController(
       duration: const Duration(milliseconds: 200),
       vsync: this,
     );
     _animation = Tween<double>(
       begin: 0,
       end: 30 * math.pi,
-    ).animate(_colorAnimation)
+    ).animate(_animationController)
       ..addListener(() {});
-
   }
 
   @override
@@ -63,7 +66,7 @@ class _GameBoardState extends State<GameBoard>
     _flipController.map((e) {
       e.dispose();
     }).toList();
-    _colorAnimation.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -75,7 +78,7 @@ class _GameBoardState extends State<GameBoard>
       child: Scaffold(
         body: Container(
           height: double.infinity,
-          color: _bgColor[_playerIndex],
+          color: _backgroundColor[_playerIndex],
           padding: EdgeInsets.symmetric(
             horizontal: 16.w,
             vertical: 10.h,
@@ -95,7 +98,7 @@ class _GameBoardState extends State<GameBoard>
                             width: 20.w,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(15),
-                              color: _bgColor[_playerIndex],
+                              color: _backgroundColor[_playerIndex],
                             ),
                             alignment: Alignment.center,
                           ),
@@ -107,13 +110,12 @@ class _GameBoardState extends State<GameBoard>
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 35.w),
                     child: GridView.builder(
-                      itemCount: _images.length,
+                      itemCount: _allBoardItems.length,
                       shrinkWrap: true,
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 6,
                         mainAxisSpacing: 10,
-                        // crossAxisSpacing: 5,
                         childAspectRatio: 1.5,
                       ),
                       itemBuilder: (context, index) {
@@ -147,11 +149,13 @@ class _GameBoardState extends State<GameBoard>
                                 borderRadius: BorderRadius.circular(40.r),
                                 child: Container(
                                   decoration: BoxDecoration(
-                                      image: DecorationImage(
-                                          image: AssetImage(
-                                            _images[index],
-                                          ),
-                                          fit: BoxFit.cover)),
+                                    image: DecorationImage(
+                                      image: AssetImage(
+                                        _allBoardItems[index],
+                                      ),
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
@@ -161,14 +165,13 @@ class _GameBoardState extends State<GameBoard>
                     ),
                   ),
                 ),
-                if (_totalItems.length == listOfItems.length)
+                if (_alreadyFlippedItems.length == _allBoardItems.length) ...[
                   Center(
                     child: GameEndWidget(
                       onPlayTap: () => _resetGame(),
                       onMenuTap: null,
                     ),
                   ),
-                if (_totalItems.length == listOfItems.length)
                   Builder(builder: (context) {
                     var (align, transform) = _getWinnerAlignments();
                     return Align(
@@ -183,6 +186,7 @@ class _GameBoardState extends State<GameBoard>
                       ),
                     );
                   }),
+                ],
                 for (int i = 0; i < widget.players.length; i++)
                   Align(
                     alignment: [
@@ -192,7 +196,7 @@ class _GameBoardState extends State<GameBoard>
                       Alignment.bottomLeft,
                     ][i],
                     child: PlayerWidget(
-                      color: _bgColor[i],
+                      color: _backgroundColor[i],
                       score: _playerScoreList[i],
                     ),
                   ),
@@ -202,7 +206,6 @@ class _GameBoardState extends State<GameBoard>
                     onLongPress: () {
                       Navigator.of(context).pop();
                       Navigator.of(context).pop();
-                      widget.bgm.play(AssetSource(narutoBgm));
                     },
                     child: Icon(
                       Icons.home,
@@ -223,24 +226,17 @@ class _GameBoardState extends State<GameBoard>
     _playerScoreList = [0, 0, 0, 0];
   }
 
-  void _setPlayerBgColor() {
-    for (var i = 0; i <= widget.players.length - 1; i++) {
-      _bgColor.add(playerBgColor[i]);
-    }
-  }
 
   void _resetGame() {
     setState(() {
-      _twoTaps.clear();
-      _twoTapsElement.clear();
-      for (var i = 0; i < _totalItems.length; i++) {
-        _flipController[i].isFront = true;
-      }
+      _twoTapsIndex.clear();
+      _flipController.map((e) => e.isFront=true).toList();
       _playerIndex = 0;
       _setInitialScore();
-      _images = listOfItems..shuffle();
-      _totalItems.clear();
+      _allBoardItems = _allBoardItems..shuffle();
+      _alreadyFlippedItems.clear();
     });
+    widget.boardController.add(NewGame());
   }
 
   Future<bool> _onBackPressed() async {
@@ -249,7 +245,8 @@ class _GameBoardState extends State<GameBoard>
         builder: (context) {
           return const CustomDialog(
             heading: "Give Up",
-            title: "Is it okay for you if your friends mocks you by saying that you are a guy who easily give up??",
+            title:
+                "Is it okay for you if your friends mocks you by saying that you are a guy who easily give up??",
             yes: "Yes",
             no: "No! I Never Give up.",
           );
@@ -262,47 +259,44 @@ class _GameBoardState extends State<GameBoard>
   }
 
   void _onItemPressed(int index) async {
-    if (_twoTaps.length < 2 && !_totalItems.contains(index)) {
+    if (_twoTapsIndex.length < 2 && !_alreadyFlippedItems.contains(index)) {
       _flipController[index].flip();
-      log(_flipController[index].value.toString(), name: 'flipedd');
-      _twoTaps.add(index);
-      _totalItems.add(index);
-      _twoTapsElement.add(listOfItems[index]);
-      if (_twoTaps.length == 2) {
-        if (_twoTapsElement[0] == _twoTapsElement[1]) {
+      log(_flipController[index].value.toString(), name: 'flipped');
+      _twoTapsIndex.add(index);
+      _alreadyFlippedItems.add(index);
+      if (_twoTapsIndex.length == 2) {
+        if (_twoTapsIndex[0] == _twoTapsIndex[1]) {
           _playerScoreList[_playerIndex]++;
-          if (listOfItems.length != _totalItems.length) {
-            _twoTaps.clear();
-            _twoTapsElement.clear();
-          } else {}
+          if (_allBoardItems.length != _alreadyFlippedItems.length) {
+            _twoTapsIndex.clear();
+          }
         } else {
           await Future.delayed(const Duration(milliseconds: 800)).then(
             (value) {
-              _flipController[_twoTaps[0]].flip();
-              _flipController[_twoTaps[1]].flip();
-              _totalItems.remove(_twoTaps[0]);
-              _totalItems.remove(_twoTaps[1]);
+              _flipController[_twoTapsIndex[0]].flip();
+              _flipController[_twoTapsIndex[1]].flip();
+              _alreadyFlippedItems.remove(_twoTapsIndex[0]);
+              _alreadyFlippedItems.remove(_twoTapsIndex[1]);
               if (_playerIndex < widget.players.length - 1) {
                 setState(() {
                   _playerIndex++;
-                  _colorAnimation.value = 0;
+                  _animationController.value = 0;
                 });
                 // changeBackgroundColor();
               } else {
                 setState(() {
                   _playerIndex = 0;
-                  _colorAnimation.value = 0;
+                  _animationController.value = 0;
                 });
                 // changeBackgroundColor();
               }
-              _twoTaps.clear();
-              _twoTapsElement.clear();
+              _twoTapsIndex.clear();
             },
           );
         }
       }
     } else {
-      if (_totalItems.length == listOfItems.length) {}
+      if (_alreadyFlippedItems.length == _allBoardItems.length) {}
     }
   }
 
@@ -329,13 +323,13 @@ class _GameBoardState extends State<GameBoard>
   }
 
   void _printLogs() {
+    log('Build Rebuild. Below are Players scores.');
     log(_playerScoreList[0].toString(), name: 'score1');
     log(_playerScoreList[1].toString(), name: 'score2');
     log(_playerScoreList[2].toString(), name: 'score3');
     log(_playerScoreList[3].toString(), name: 'score4');
-    log('build rebuild');
     log(widget.players[_playerIndex].name);
     log(widget.players.length.toString(), name: 'number of players');
-    log(_bgColor.toString(), name: 'bg color');
+    log(_backgroundColor.toString(), name: 'bg color');
   }
 }
