@@ -27,29 +27,25 @@ class GameBoard extends StatefulWidget {
 
 class _GameBoardState extends State<GameBoard>
     with SingleTickerProviderStateMixin {
-  List<FlipController> _flipController = [];
+  final List<FlipController> _flipController =
+      List.generate(boardItems.length, (i) => FlipController());
 
   ///On user's turn they have tap two elements to check whether they match.
   ///This list stores the index of the two elements pressed
   final List<int> _twoTapsIndex = [];
 
+  final List<int> _alreadyFlippedItemsIndex = [];
+  final List<String> _allBoardItems = List.from(boardItems)..shuffle();
 
-  final List _alreadyFlippedItems = [];
-  List<String> _allBoardItems = [];
-
-  int _playerIndex = 0;
-  List<int> _playerScoreList = [];
-  final List<Color> _backgroundColor = [];
+  int _currentTurnIndex = 0;
+  final List<int> _playerScoreList = [];
+  final List<Color> _backgroundColor = List.from(playerBgColor);
   late AnimationController _animationController;
   late Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
-    _allBoardItems = [...boardItems]..shuffle();
-    _setInitialScore();
-    _backgroundColor.addAll(playerBgColor);
-    _flipController = List.generate(boardItems.length, (i) => FlipController());
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 200),
       vsync: this,
@@ -57,8 +53,8 @@ class _GameBoardState extends State<GameBoard>
     _animation = Tween<double>(
       begin: 0,
       end: 30 * math.pi,
-    ).animate(_animationController)
-      ..addListener(() {});
+    ).animate(_animationController);
+    _setInitialScore();
   }
 
   @override
@@ -78,7 +74,7 @@ class _GameBoardState extends State<GameBoard>
       child: Scaffold(
         body: Container(
           height: double.infinity,
-          color: _backgroundColor[_playerIndex],
+          color: _backgroundColor[_currentTurnIndex],
           padding: EdgeInsets.symmetric(
             horizontal: 16.w,
             vertical: 10.h,
@@ -98,7 +94,7 @@ class _GameBoardState extends State<GameBoard>
                             width: 20.w,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(15),
-                              color: _backgroundColor[_playerIndex],
+                              color: _backgroundColor[_currentTurnIndex],
                             ),
                             alignment: Alignment.center,
                           ),
@@ -165,7 +161,8 @@ class _GameBoardState extends State<GameBoard>
                     ),
                   ),
                 ),
-                if (_alreadyFlippedItems.length == _allBoardItems.length) ...[
+                if (_alreadyFlippedItemsIndex.length ==
+                    _allBoardItems.length) ...[
                   Center(
                     child: GameEndWidget(
                       onPlayTap: () => _resetGame(),
@@ -223,18 +220,18 @@ class _GameBoardState extends State<GameBoard>
   }
 
   void _setInitialScore() {
-    _playerScoreList = [0, 0, 0, 0];
+    _playerScoreList.clear();
+    _playerScoreList.addAll([0, 0, 0, 0]);
   }
-
 
   void _resetGame() {
     setState(() {
       _twoTapsIndex.clear();
-      _flipController.map((e) => e.isFront=true).toList();
-      _playerIndex = 0;
+      _flipController.map((e) => e.isFront = true).toList();
+      _currentTurnIndex = 0;
       _setInitialScore();
-      _allBoardItems = _allBoardItems..shuffle();
-      _alreadyFlippedItems.clear();
+      _allBoardItems.shuffle();
+      _alreadyFlippedItemsIndex.clear();
     });
     widget.boardController.add(NewGame());
   }
@@ -259,15 +256,16 @@ class _GameBoardState extends State<GameBoard>
   }
 
   void _onItemPressed(int index) async {
-    if (_twoTapsIndex.length < 2 && !_alreadyFlippedItems.contains(index)) {
+    if (_twoTapsIndex.length < 2 &&
+        !_alreadyFlippedItemsIndex.contains(index)) {
       _flipController[index].flip();
       log(_flipController[index].value.toString(), name: 'flipped');
       _twoTapsIndex.add(index);
-      _alreadyFlippedItems.add(index);
+      _alreadyFlippedItemsIndex.add(index);
       if (_twoTapsIndex.length == 2) {
         if (_twoTapsIndex[0] == _twoTapsIndex[1]) {
-          _playerScoreList[_playerIndex]++;
-          if (_allBoardItems.length != _alreadyFlippedItems.length) {
+          _playerScoreList[_currentTurnIndex]++;
+          if (_allBoardItems.length != _alreadyFlippedItemsIndex.length) {
             _twoTapsIndex.clear();
           }
         } else {
@@ -275,17 +273,17 @@ class _GameBoardState extends State<GameBoard>
             (value) {
               _flipController[_twoTapsIndex[0]].flip();
               _flipController[_twoTapsIndex[1]].flip();
-              _alreadyFlippedItems.remove(_twoTapsIndex[0]);
-              _alreadyFlippedItems.remove(_twoTapsIndex[1]);
-              if (_playerIndex < widget.players.length - 1) {
+              _alreadyFlippedItemsIndex.remove(_twoTapsIndex[0]);
+              _alreadyFlippedItemsIndex.remove(_twoTapsIndex[1]);
+              if (_currentTurnIndex < widget.players.length - 1) {
                 setState(() {
-                  _playerIndex++;
+                  _currentTurnIndex++;
                   _animationController.value = 0;
                 });
                 // changeBackgroundColor();
               } else {
                 setState(() {
-                  _playerIndex = 0;
+                  _currentTurnIndex = 0;
                   _animationController.value = 0;
                 });
                 // changeBackgroundColor();
@@ -296,7 +294,7 @@ class _GameBoardState extends State<GameBoard>
         }
       }
     } else {
-      if (_alreadyFlippedItems.length == _allBoardItems.length) {}
+      if (_alreadyFlippedItemsIndex.length == _allBoardItems.length) {}
     }
   }
 
@@ -328,7 +326,7 @@ class _GameBoardState extends State<GameBoard>
     log(_playerScoreList[1].toString(), name: 'score2');
     log(_playerScoreList[2].toString(), name: 'score3');
     log(_playerScoreList[3].toString(), name: 'score4');
-    log(widget.players[_playerIndex].name);
+    log(widget.players[_currentTurnIndex].name);
     log(widget.players.length.toString(), name: 'number of players');
     log(_backgroundColor.toString(), name: 'bg color');
   }
