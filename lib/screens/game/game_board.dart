@@ -8,6 +8,7 @@ import '../../constants/constants.dart';
 import '../../widgets/flip_animation.dart';
 import '../../widgets/game_end_widget.dart';
 import '../../widgets/player_widget.dart';
+//Song: My Mind goes salalalala
 
 class GameBoard extends StatefulWidget {
   final List<String> players;
@@ -113,7 +114,7 @@ class _GameBoardState extends State<GameBoard>
   Widget build(BuildContext context) {
     _printLogs();
     return WillPopScope(
-      onWillPop: () async => false,
+      onWillPop: _onBackPressed,
       child: Scaffold(
         body: Container(
           height: double.infinity,
@@ -159,96 +160,46 @@ class _GameBoardState extends State<GameBoard>
                         childAspectRatio: 1.5,
                       ),
                       itemBuilder: (context, index) {
-                        return (flipController.isNotEmpty)
-                            ? GestureDetector(
-                                onTap: () async {
-                                  if (twoTaps.length < 2 &&
-                                      !totalItems.contains(index)) {
-                                    flipController[index].flip();
-                                    log(flipController[index].value.toString(),
-                                        name: 'flipedd');
-                                    twoTaps.add(index);
-                                    totalItems.add(index);
-                                    twoTapsElement.add(listOfItems[index]);
-                                    if (twoTaps.length == 2) {
-                                      if (twoTapsElement[0] ==
-                                          twoTapsElement[1]) {
-                                        playerScoreList[playerIndex]++;
-                                        if (listOfItems.length !=
-                                            totalItems.length) {
-                                          twoTaps.clear();
-                                          twoTapsElement.clear();
-                                        } else {}
-                                      } else {
-                                        await Future.delayed(const Duration(
-                                                milliseconds: 800))
-                                            .then(
-                                          (value) {
-                                            flipController[twoTaps[0]].flip();
-                                            flipController[twoTaps[1]].flip();
-                                            totalItems.remove(twoTaps[0]);
-                                            totalItems.remove(twoTaps[1]);
-                                            if (playerIndex <
-                                                widget.players.length - 1) {
-                                              setState(() {
-                                                playerIndex++;
-                                                colorAnimation.value = 0;
-                                                gameStarted = true;
-                                              });
-                                              // changeBackgroundColor();
-                                            } else {
-                                              setState(() {
-                                                playerIndex = 0;
-                                                colorAnimation.value = 0;
-                                              });
-                                              // changeBackgroundColor();
-                                            }
-                                            twoTaps.clear();
-                                            twoTapsElement.clear();
-                                          },
-                                        );
-                                      }
-                                    }
-                                  } else {
-                                    if (totalItems.length ==
-                                        listOfItems.length) {}
-                                  }
-                                },
-                                child: FlipAnimation(
-                                  controller: flipController[index],
-                                  firstChild: Container(
-                                    padding: EdgeInsets.all(4.w),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(40.r),
-                                      color: Colors.white,
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(40.r),
-                                      child: Image.asset(
-                                          'assets/images/card_bg.jpg'),
-                                    ),
-                                  ),
-                                  secondChild: Container(
-                                    padding: EdgeInsets.all(5.w),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(40.r),
-                                      color: Colors.white,
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(40.r),
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                            image: DecorationImage(
-                                                image: AssetImage(
-                                                  images[index],
-                                                ),
-                                                fit: BoxFit.cover)),
-                                      ),
-                                    ),
-                                  ),
+                        if (flipController.isEmpty) {
+                          return const SizedBox.shrink();
+                        }
+                        return GestureDetector(
+                          onTap: () {
+                            _onItemPressed(index);
+                          },
+                          child: FlipAnimation(
+                            controller: flipController[index],
+                            firstChild: Container(
+                              padding: EdgeInsets.all(4.w),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(40.r),
+                                color: Colors.white,
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(40.r),
+                                child: Image.asset('assets/images/card_bg.jpg'),
+                              ),
+                            ),
+                            secondChild: Container(
+                              padding: EdgeInsets.all(5.w),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(40.r),
+                                color: Colors.white,
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(40.r),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                      image: DecorationImage(
+                                          image: AssetImage(
+                                            images[index],
+                                          ),
+                                          fit: BoxFit.cover)),
                                 ),
-                              )
-                            : const SizedBox.shrink();
+                              ),
+                            ),
+                          ),
+                        );
                       },
                     ),
                   ),
@@ -275,6 +226,8 @@ class _GameBoardState extends State<GameBoard>
                       ),
                     );
                   }),
+
+                //Todo: Refactor below
                 Align(
                   alignment: Alignment.topLeft,
                   child: PlayerWidget(
@@ -328,17 +281,74 @@ class _GameBoardState extends State<GameBoard>
     );
   }
 
+  Future<bool> _onBackPressed() async {
+    final value = await showDialog(
+        context: context,
+        builder: (context) {
+          return const CustomDialog();
+        });
+    if(value==true){
+      if(!mounted)return false;
+      Navigator.pop(context);
+    }
+    return false;
+  }
+
+  void _onItemPressed(int index) async {
+    if (twoTaps.length < 2 && !totalItems.contains(index)) {
+      flipController[index].flip();
+      log(flipController[index].value.toString(), name: 'flipedd');
+      twoTaps.add(index);
+      totalItems.add(index);
+      twoTapsElement.add(listOfItems[index]);
+      if (twoTaps.length == 2) {
+        if (twoTapsElement[0] == twoTapsElement[1]) {
+          playerScoreList[playerIndex]++;
+          if (listOfItems.length != totalItems.length) {
+            twoTaps.clear();
+            twoTapsElement.clear();
+          } else {}
+        } else {
+          await Future.delayed(const Duration(milliseconds: 800)).then(
+            (value) {
+              flipController[twoTaps[0]].flip();
+              flipController[twoTaps[1]].flip();
+              totalItems.remove(twoTaps[0]);
+              totalItems.remove(twoTaps[1]);
+              if (playerIndex < widget.players.length - 1) {
+                setState(() {
+                  playerIndex++;
+                  colorAnimation.value = 0;
+                  gameStarted = true;
+                });
+                // changeBackgroundColor();
+              } else {
+                setState(() {
+                  playerIndex = 0;
+                  colorAnimation.value = 0;
+                });
+                // changeBackgroundColor();
+              }
+              twoTaps.clear();
+              twoTapsElement.clear();
+            },
+          );
+        }
+      }
+    } else {
+      if (totalItems.length == listOfItems.length) {}
+    }
+  }
+
   (Alignment align, Alignment transform) _getWinnerAlignments() {
     var align = Alignment.center;
     var transform = Alignment.center;
-    if (playerScoreList[0] >
-            playerScoreList[1] && //Todo: Index out of bound for 2,3 users
+    if (playerScoreList[0] > playerScoreList[1] &&
         playerScoreList[0] > playerScoreList[2] &&
         playerScoreList[0] > playerScoreList[3]) {
       align = Alignment.topLeft;
       transform = Alignment.bottomRight;
-    } else if (playerScoreList[1] >
-            playerScoreList[2] && //Todo: Index out of bound for 2,3 users
+    } else if (playerScoreList[1] > playerScoreList[2] &&
         playerScoreList[1] > playerScoreList[3]) {
       align = Alignment.topLeft;
       align = Alignment.bottomRight;
@@ -361,5 +371,38 @@ class _GameBoardState extends State<GameBoard>
     log(widget.players[playerIndex]);
     log(widget.players.length.toString(), name: 'number of players');
     log(bgColor.toString(), name: 'bg color');
+  }
+}
+
+class CustomDialog extends StatelessWidget {
+  const CustomDialog({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text("Give Up"),
+      content: const Text(
+          "Is it okay for you if your friends mocks you by saying that you are a guy who easily give up??"),
+      actions: [
+        TextButton(
+          onPressed: (){
+            Navigator.pop(context,true);
+          },
+          child: const Text(
+            "Yes"
+          ),
+        ),
+        TextButton(
+          onPressed: (){
+            Navigator.pop(context,false);
+          },
+          child: const Text(
+            "No! I Never Give up."
+          ),
+        ),
+      ],
+    );
   }
 }
