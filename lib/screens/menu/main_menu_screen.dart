@@ -1,5 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
-import 'package:flip_anime_together/screens/game/single_device_computer.dart';
+import 'package:flip_anime_together/screens/game/offline_game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -48,10 +48,7 @@ class MainMenuScreen extends StatelessWidget {
               player.play(AssetSource(clickSound));
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (context) => GameScreenCom(
-                    players: 2,
-                    bgm: bgm,
-                  ),
+                  builder: (context) => const OfflineGame(),
                 ),
               );
             },

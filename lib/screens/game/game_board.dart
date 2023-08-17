@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 import 'dart:math' as math;
+import 'package:flip_anime_together/screens/game/board_controller.dart';
 import 'package:flip_anime_together/widgets/custom_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -12,7 +13,7 @@ import 'board_event.dart';
 //Song: My Mind goes salalalala
 
 class GameBoard extends StatefulWidget {
-  final StreamController<BoardEvent> boardController;
+  final BoardController boardController;
   final List<Players> players;
 
   const GameBoard({
@@ -233,7 +234,7 @@ class _GameBoardState extends State<GameBoard>
       _allBoardItems.shuffle();
       _alreadyFlippedItemsIndex.clear();
     });
-    widget.boardController.add(NewGame());
+    widget.boardController.add(NewGameEvent());
   }
 
   Future<bool> _onBackPressed() async {
