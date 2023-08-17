@@ -31,11 +31,9 @@ class _GameBoardState extends State<GameBoard>
   List totalItems = [];
   final random = math.Random();
   dynamic images;
-  int playerIndex=0;
-  int player1Score = 0;
-  int player2Score = 0;
-  int player3Score = 0;
-  int player4Score = 0;
+  int playerIndex = 0;
+  List<int> playerScoreList = [];
+
   List<Color> bgColor = [];
   late AnimationController colorAnimation;
   late Animation<double> animation;
@@ -45,7 +43,7 @@ class _GameBoardState extends State<GameBoard>
   void initState() {
     super.initState();
     images = listOfItems..shuffle();
-
+    _setInitialScore();
     setPlayerBgColor();
     flipController.clear();
     flipController = List.generate(listOfItems.length, (i) => FlipController());
@@ -59,9 +57,11 @@ class _GameBoardState extends State<GameBoard>
     ).animate(colorAnimation)
       ..addListener(() {});
     // changeBackgroundColor();
-
   }
 
+  void _setInitialScore(){
+    playerScoreList=widget.players.map((e) => 0).toList();
+  }
   startAnimation() {
     colorAnimation = AnimationController(
       duration: const Duration(milliseconds: 200),
@@ -78,7 +78,6 @@ class _GameBoardState extends State<GameBoard>
     colorAnimation.forward();
   }
 
-
   setPlayerBgColor() {
     for (var i = 0; i <= widget.players.length - 1; i++) {
       bgColor.add(playerBgColor[i]);
@@ -92,11 +91,8 @@ class _GameBoardState extends State<GameBoard>
       for (var i = 0; i < totalItems.length; i++) {
         flipController[i].isFront = true;
       }
-      playerIndex =0;
-      player1Score = 0;
-      player2Score = 0;
-      player3Score = 0;
-      player4Score = 0;
+      playerIndex = 0;
+      _setInitialScore();
       images = listOfItems..shuffle();
       totalItems.clear();
       gameStarted = false;
@@ -140,7 +136,7 @@ class _GameBoardState extends State<GameBoard>
                             width: 20.w,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(15),
-                              color:  bgColor[playerIndex],
+                              color: bgColor[playerIndex],
                             ),
                             alignment: Alignment.center,
                           ),
@@ -176,26 +172,7 @@ class _GameBoardState extends State<GameBoard>
                                     if (twoTaps.length == 2) {
                                       if (twoTapsElement[0] ==
                                           twoTapsElement[1]) {
-                                        if (playerIndex ==0) {
-                                          setState(() {
-                                            player1Score++;
-                                          });
-                                        } else if (playerIndex ==
-                                           1) {
-                                          setState(() {
-                                            player2Score++;
-                                          });
-                                        } else if (playerIndex ==
-                                            2) {
-                                          setState(() {
-                                            player3Score++;
-                                          });
-                                        } else if (playerIndex ==
-                                            3) {
-                                          setState(() {
-                                            player4Score++;
-                                          });
-                                        }
+                                        playerScoreList[playerIndex]++;
                                         if (listOfItems.length !=
                                             totalItems.length) {
                                           twoTaps.clear();
@@ -337,7 +314,7 @@ class _GameBoardState extends State<GameBoard>
                   alignment: Alignment.topLeft,
                   child: PlayerWidget(
                     color: Colors.red,
-                    score: player1Score,
+                    score: playerScoreList[0],
                   ),
                 ),
                 if (widget.players.length == 3 || widget.players.length == 4)
@@ -345,14 +322,14 @@ class _GameBoardState extends State<GameBoard>
                     alignment: Alignment.topRight,
                     child: PlayerWidget(
                       color: Colors.green,
-                      score: player3Score,
+                      score: playerScoreList[2],
                     ),
                   ),
                 Align(
                   alignment: Alignment.bottomRight,
                   child: PlayerWidget(
                     color: Colors.blue,
-                    score: player2Score,
+                    score: playerScoreList[1],
                   ),
                 ),
                 if (widget.players.length == 4)
@@ -360,7 +337,7 @@ class _GameBoardState extends State<GameBoard>
                     alignment: Alignment.bottomLeft,
                     child: PlayerWidget(
                       color: Colors.orange,
-                      score: player4Score,
+                      score: playerScoreList[3],
                     ),
                   ),
                 Align(
@@ -387,10 +364,10 @@ class _GameBoardState extends State<GameBoard>
   }
 
   void _printLogs() {
-    log(player1Score.toString(), name: 'score1');
-    log(player2Score.toString(), name: 'score2');
-    log(player3Score.toString(), name: 'score3');
-    log(player4Score.toString(), name: 'score4');
+    log(playerScoreList[0].toString(), name: 'score1');
+    log(playerScoreList[1].toString(), name: 'score2');
+    log(playerScoreList[2].toString(), name: 'score3');
+    log(playerScoreList[3].toString(), name: 'score4');
     log('build rebuild');
     log(widget.players[playerIndex]);
     log(widget.players.length.toString(), name: 'number of players');
