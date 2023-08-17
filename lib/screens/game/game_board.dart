@@ -59,9 +59,10 @@ class _GameBoardState extends State<GameBoard>
     // changeBackgroundColor();
   }
 
-  void _setInitialScore(){
-    playerScoreList=widget.players.map((e) => 0).toList();
+  void _setInitialScore() {
+    playerScoreList = [0, 0, 0, 0];
   }
+
   startAnimation() {
     colorAnimation = AnimationController(
       duration: const Duration(milliseconds: 200),
@@ -260,56 +261,20 @@ class _GameBoardState extends State<GameBoard>
                     ),
                   ),
                 if (totalItems.length == listOfItems.length)
-                  (player1Score > player2Score &&
-                          player1Score > player3Score &&
-                          player1Score > player4Score)
-                      ? Align(
-                          alignment: Alignment.topLeft,
-                          child: Transform.rotate(
-                            alignment: Alignment.bottomRight,
-                            angle: -math.pi / 4,
-                            child: Image.asset(
-                              'assets/gifs/winner.gif',
-                              height: 50.h,
-                            ),
-                          ),
-                        )
-                      : (player2Score > player3Score &&
-                              player2Score > player4Score)
-                          ? Align(
-                              alignment: Alignment.bottomRight,
-                              child: Transform.rotate(
-                                alignment: Alignment.topLeft,
-                                angle: -math.pi / 4,
-                                child: Image.asset(
-                                  'assets/gifs/winner.gif',
-                                  height: 50,
-                                ),
-                              ),
-                            )
-                          : (player3Score > player4Score)
-                              ? Align(
-                                  alignment: Alignment.topRight,
-                                  child: Transform.rotate(
-                                    alignment: Alignment.bottomLeft,
-                                    angle: math.pi / 4,
-                                    child: Image.asset(
-                                      'assets/gifs/winner.gif',
-                                      height: 50.h,
-                                    ),
-                                  ),
-                                )
-                              : Align(
-                                  alignment: Alignment.bottomLeft,
-                                  child: Transform.rotate(
-                                    alignment: Alignment.topRight,
-                                    angle: math.pi / 4,
-                                    child: Image.asset(
-                                      'assets/gifs/winner.gif',
-                                      height: 50.h,
-                                    ),
-                                  ),
-                                ),
+                  Builder(builder: (context) {
+                    var (align, transform) = _getWinnerAlignments();
+                    return Align(
+                      alignment: align,
+                      child: Transform.rotate(
+                        alignment: transform,
+                        angle: -math.pi / 4,
+                        child: Image.asset(
+                          'assets/gifs/winner.gif',
+                          height: 50.h,
+                        ),
+                      ),
+                    );
+                  }),
                 Align(
                   alignment: Alignment.topLeft,
                   child: PlayerWidget(
@@ -361,6 +326,30 @@ class _GameBoardState extends State<GameBoard>
         ),
       ),
     );
+  }
+
+  (Alignment align, Alignment transform) _getWinnerAlignments() {
+    var align = Alignment.center;
+    var transform = Alignment.center;
+    if (playerScoreList[0] >
+            playerScoreList[1] && //Todo: Index out of bound for 2,3 users
+        playerScoreList[0] > playerScoreList[2] &&
+        playerScoreList[0] > playerScoreList[3]) {
+      align = Alignment.topLeft;
+      transform = Alignment.bottomRight;
+    } else if (playerScoreList[1] >
+            playerScoreList[2] && //Todo: Index out of bound for 2,3 users
+        playerScoreList[1] > playerScoreList[3]) {
+      align = Alignment.topLeft;
+      align = Alignment.bottomRight;
+    } else if (playerScoreList[2] > playerScoreList[3]) {
+      align = Alignment.bottomRight;
+      transform = Alignment.topLeft;
+    } else {
+      align = Alignment.bottomLeft;
+      transform = Alignment.topRight;
+    }
+    return (align, transform);
   }
 
   void _printLogs() {
