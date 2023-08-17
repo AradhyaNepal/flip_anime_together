@@ -226,36 +226,17 @@ class _GameBoardState extends State<GameBoard>
                       ),
                     );
                   }),
-
-                //Todo: Refactor below
-                Align(
-                  alignment: Alignment.topLeft,
-                  child: PlayerWidget(
-                    color: Colors.red,
-                    score: playerScoreList[0],
-                  ),
-                ),
-                if (widget.players.length == 3 || widget.players.length == 4)
+                for (int i = 0; i < widget.players.length; i++)
                   Align(
-                    alignment: Alignment.topRight,
+                    alignment: [
+                      Alignment.topLeft,
+                      Alignment.bottomRight,
+                      Alignment.topRight,
+                      Alignment.bottomLeft,
+                    ][i],
                     child: PlayerWidget(
-                      color: Colors.green,
-                      score: playerScoreList[2],
-                    ),
-                  ),
-                Align(
-                  alignment: Alignment.bottomRight,
-                  child: PlayerWidget(
-                    color: Colors.blue,
-                    score: playerScoreList[1],
-                  ),
-                ),
-                if (widget.players.length == 4)
-                  Align(
-                    alignment: Alignment.bottomLeft,
-                    child: PlayerWidget(
-                      color: Colors.orange,
-                      score: playerScoreList[3],
+                      color: bgColor[i],
+                      score: playerScoreList[i],
                     ),
                   ),
                 Align(
@@ -287,8 +268,8 @@ class _GameBoardState extends State<GameBoard>
         builder: (context) {
           return const CustomDialog();
         });
-    if(value==true){
-      if(!mounted)return false;
+    if (value == true) {
+      if (!mounted) return false;
       Navigator.pop(context);
     }
     return false;
@@ -387,20 +368,16 @@ class CustomDialog extends StatelessWidget {
           "Is it okay for you if your friends mocks you by saying that you are a guy who easily give up??"),
       actions: [
         TextButton(
-          onPressed: (){
-            Navigator.pop(context,true);
+          onPressed: () {
+            Navigator.pop(context, true);
           },
-          child: const Text(
-            "Yes"
-          ),
+          child: const Text("Yes"),
         ),
         TextButton(
-          onPressed: (){
-            Navigator.pop(context,false);
+          onPressed: () {
+            Navigator.pop(context, false);
           },
-          child: const Text(
-            "No! I Never Give up."
-          ),
+          child: const Text("No! I Never Give up."),
         ),
       ],
     );
