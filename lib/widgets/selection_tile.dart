@@ -3,7 +3,7 @@ import 'package:flip_anime_together/constants/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../screens/game/game_screen.dart';
+import '../screens/game/single_device_multi_player.dart';
 
 class SelectionTile extends StatelessWidget {
   final String playerNumber;

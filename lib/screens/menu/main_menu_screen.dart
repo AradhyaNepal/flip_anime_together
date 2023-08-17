@@ -1,5 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
-import 'package:flip_anime_together/screens/game/game_screen_com.dart';
+import 'package:flip_anime_together/screens/game/single_device_computer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
