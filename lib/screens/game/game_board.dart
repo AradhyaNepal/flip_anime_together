@@ -12,7 +12,7 @@ import '../../widgets/player_widget.dart';
 //Song: My Mind goes salalalala
 
 class GameBoard extends StatefulWidget {
-  final List<String> players;
+  final List<Players> players;
   final AudioPlayer bgm;
 
   const GameBoard({
@@ -38,8 +38,6 @@ class _GameBoardState extends State<GameBoard>
   final List<Color> _bgColor = [];
   late AnimationController _colorAnimation;
   late Animation<double> _animation;
-  bool gameStarted = false;
-
   @override
   void initState() {
     super.initState();
@@ -57,7 +55,7 @@ class _GameBoardState extends State<GameBoard>
       end: 30 * math.pi,
     ).animate(_colorAnimation)
       ..addListener(() {});
-    // changeBackgroundColor();
+
   }
 
   @override
@@ -242,7 +240,6 @@ class _GameBoardState extends State<GameBoard>
       _setInitialScore();
       _images = listOfItems..shuffle();
       _totalItems.clear();
-      gameStarted = false;
     });
   }
 
@@ -289,7 +286,6 @@ class _GameBoardState extends State<GameBoard>
                 setState(() {
                   _playerIndex++;
                   _colorAnimation.value = 0;
-                  gameStarted = true;
                 });
                 // changeBackgroundColor();
               } else {
@@ -338,7 +334,7 @@ class _GameBoardState extends State<GameBoard>
     log(_playerScoreList[2].toString(), name: 'score3');
     log(_playerScoreList[3].toString(), name: 'score4');
     log('build rebuild');
-    log(widget.players[_playerIndex]);
+    log(widget.players[_playerIndex].name);
     log(widget.players.length.toString(), name: 'number of players');
     log(_bgColor.toString(), name: 'bg color');
   }
