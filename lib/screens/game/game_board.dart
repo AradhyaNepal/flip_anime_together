@@ -27,8 +27,7 @@ class GameBoard extends StatefulWidget {
   State<GameBoard> createState() => _GameBoardState();
 }
 
-class _GameBoardState extends State<GameBoard>
-    with SingleTickerProviderStateMixin {
+class _GameBoardState extends State<GameBoard> {
   final List<FlipController> _flipController =
       List.generate(boardItems.length, (i) => FlipController());
 
@@ -42,20 +41,10 @@ class _GameBoardState extends State<GameBoard>
   int _currentTurnIndex = 0;
   final List<int> _playerScoreList = [];
   final List<Color> _backgroundColor = List.from(playerBgColor);
-  late AnimationController _animationController;
-  late Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 200),
-      vsync: this,
-    );
-    _animation = Tween<double>(
-      begin: 0,
-      end: 30 * math.pi,
-    ).animate(_animationController);
     _setInitialScore();
   }
 
@@ -64,7 +53,6 @@ class _GameBoardState extends State<GameBoard>
     _flipController.map((e) {
       e.dispose();
     }).toList();
-    _animationController.dispose();
     super.dispose();
   }
 
@@ -87,22 +75,15 @@ class _GameBoardState extends State<GameBoard>
             child: Stack(
               children: [
                 Center(
-                  child: AnimatedBuilder(
-                      animation: _animation,
-                      builder: (context, _) {
-                        return Transform.scale(
-                          scale: _animation.value,
-                          child: Container(
-                            height: 20.h,
-                            width: 20.w,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(15),
-                              color: _backgroundColor[_currentTurnIndex],
-                            ),
-                            alignment: Alignment.center,
-                          ),
-                        );
-                      }),
+                  child: Container(
+                    height: 20.h,
+                    width: 20.w,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(15),
+                      color: _backgroundColor[_currentTurnIndex],
+                    ),
+                    alignment: Alignment.center,
+                  ),
                 ),
                 Align(
                   alignment: Alignment.center,
@@ -165,7 +146,6 @@ class _GameBoardState extends State<GameBoard>
                   ),
                 ),
                 if (_gameOver) ...[
-                  //Todo: What if both widget goes inside GameEndWidget
                   Center(
                     child: GameEndWidget(
                       onPlayTap: _resetGame,
@@ -338,8 +318,6 @@ class _GameBoardState extends State<GameBoard>
     } else {
       _currentTurnIndex = 0;
     }
-    _animationController.value = 0;
-    // changeBackgroundColor();//Todo: Change background
     _twoTapsIndex.clear();
     setState(() {});
   }
