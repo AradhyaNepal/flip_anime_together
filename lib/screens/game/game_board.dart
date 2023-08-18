@@ -277,13 +277,15 @@ class _GameBoardState extends State<GameBoard>
     _performFlipAction(index);
   }
 
-  Future<void> _performFlipAction(int index,) async {
+  Future<void> _performFlipAction(
+    int index,
+  ) async {
     _flipController[index].flip();
     log(_flipController[index].value.toString(), name: 'flipped');
     _twoTapsIndex.add(index);
     _alreadyFlippedItemsIndex.add(index);
     await _checkIsSecondAndIsAMatch();
-    widget.boardController.value=ActionPerformedEvent(indexPressed: index);
+    widget.boardController.value = ActionPerformedEvent(indexPressed: index);
   }
 
   bool _ignoreOnPress(int index) {
@@ -293,8 +295,7 @@ class _GameBoardState extends State<GameBoard>
     return false;
   }
 
-  Future<void> _checkIsSecondAndIsAMatch(
-  ) async {
+  Future<void> _checkIsSecondAndIsAMatch() async {
     if (_itsUserFirstTurn) {
       _addToMemoryIfComputer();
       return;
@@ -347,8 +348,7 @@ class _GameBoardState extends State<GameBoard>
     int index = _twoTapsIndex.last;
     final player = _currentPlayer;
     if (player is Computer) {
-      player
-          .observerTheCard(Memory(index: index, value: _allBoardItems[index]));
+      player.observerTheCard(index);
     }
   }
 
