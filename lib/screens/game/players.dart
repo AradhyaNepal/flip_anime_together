@@ -72,7 +72,7 @@ class Computer extends Players {
 
   int _bestSecondMove(String previousValue){
     var answerFromMemory =-1;
-    for(int i=0;i<_computerMemory.length-1;i++){//Todo: Not the last verify
+    for(int i=0;i<_computerMemory.length-1;i++){//Todo: Not the last verify. Why? Does this work?
       if(_computerMemory[i].value == previousValue){
         if(availableIndex.contains(_computerMemory[i].index)){
           answerFromMemory=i;
@@ -92,22 +92,36 @@ class Computer extends Players {
   ///If computer knows all items location then randomly pick an items.
   int _bestFirstMove(){
     var answer=-1;
-    //Todo: Write a program, which returns redundant value from the list
-    //Start
-    final originalList=_computerMemory.map((e) => e.index).toList();
-    final uniqueList=originalList.toSet().toList();
-    originalList.removeRange(0, 1);
-    //End
+    //Way 1: Find whether both answer for specific card is saved in memory.
+    // On no both element found go to Way 2
+    final redundantMoveFromMemory=_findIndexFromRedundancy();
+    if(redundantMoveFromMemory!=null)return redundantMoveFromMemory;
+    //Way 2: Find a card index which is not saved in memory, to explore new unknown and to expand computer memory
+    //On all availableIndex already saved in memory, go to Way 3
     for(int i=0;i<availableIndex.length;i++){
       if(_computerMemory.indexWhere((element) => element.index==availableIndex[i])==-1){
         answer=availableIndex[i];
         break;
       }
     }
+    //Way 3: Randomly pick any available index
     if(answer==-1){
-      answer=_random.nextInt(availableIndex.length);
+      answer=availableIndex[_random.nextInt(availableIndex.length)];
     }
     return answer;
+  }
+
+
+  int? _findIndexFromRedundancy() {
+    List<Memory> uniqueElements = [];
+    for(var item in _computerMemory){
+      if(uniqueElements.indexWhere((element) => element.value==item.value)!=-1){
+        return item.index;
+      }else{
+        uniqueElements.add(item);
+      }
+    }
+    return null;
   }
 
   Computer({
