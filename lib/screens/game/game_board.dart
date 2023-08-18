@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:math' as math;
 import 'package:flip_anime_together/screens/game/board_controller.dart';
+import 'package:flip_anime_together/screens/game/players.dart';
 import 'package:flip_anime_together/widgets/custom_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -234,7 +235,7 @@ class _GameBoardState extends State<GameBoard>
       _allBoardItems.shuffle();
       _alreadyFlippedItemsIndex.clear();
     });
-    widget.boardController.value=NewGameEvent();
+    widget.boardController.value = NewGameEvent();
   }
 
   Future<bool> _onBackPressed() async {
@@ -257,45 +258,72 @@ class _GameBoardState extends State<GameBoard>
   }
 
   void _onItemPressed(int index) async {
-    if (_twoTapsIndex.length < 2 &&
-        !_alreadyFlippedItemsIndex.contains(index)) {
-      _flipController[index].flip();
-      log(_flipController[index].value.toString(), name: 'flipped');
-      _twoTapsIndex.add(index);
-      _alreadyFlippedItemsIndex.add(index);
-      if (_twoTapsIndex.length == 2) {
-        if (_twoTapsIndex[0] == _twoTapsIndex[1]) {
-          _playerScoreList[_currentTurnIndex]++;
-          if (_allBoardItems.length != _alreadyFlippedItemsIndex.length) {
-            _twoTapsIndex.clear();
-          }
-        } else {
-          await Future.delayed(const Duration(milliseconds: 800)).then(
-            (value) {
-              _flipController[_twoTapsIndex[0]].flip();
-              _flipController[_twoTapsIndex[1]].flip();
-              _alreadyFlippedItemsIndex.remove(_twoTapsIndex[0]);
-              _alreadyFlippedItemsIndex.remove(_twoTapsIndex[1]);
-              if (_currentTurnIndex < widget.players.length - 1) {
-                setState(() {
-                  _currentTurnIndex++;
-                  _animationController.value = 0;
-                });
-                // changeBackgroundColor();
-              } else {
-                setState(() {
-                  _currentTurnIndex = 0;
-                  _animationController.value = 0;
-                });
-                // changeBackgroundColor();
-              }
-              _twoTapsIndex.clear();
-            },
-          );
-        }
-      }
+    if (_incorrectTapsAndAlreadyFlipped(index)) return;
+    _flipController[index].flip();
+    log(_flipController[index].value.toString(), name: 'flipped');
+    _twoTapsIndex.add(index);
+    _alreadyFlippedItemsIndex.add(index);
+    await _checkIsSecondAndIsAMatch();
+  }
+
+  bool _incorrectTapsAndAlreadyFlipped(int index) {
+    return _twoTapsIndex.length >= 2 ||
+        _alreadyFlippedItemsIndex.contains(index);
+  }
+
+  Future<void> _checkIsSecondAndIsAMatch() async {
+    if (_itsUserFirstTurn) {
+      _addToMemoryIfComputer();
+      return;
+    }
+    if (_isCorrectMatch) {
+      _playerMatchedCorrectly();
     } else {
-      if (_alreadyFlippedItemsIndex.length == _allBoardItems.length) {}
+      await _playerMatchedIncorrectly();
+    }
+    _nextUserTurn();
+  }
+
+  bool get _itsUserFirstTurn => _twoTapsIndex.length == 1;
+
+  bool get _isCorrectMatch => _twoTapsIndex[0] == _twoTapsIndex[1];
+
+  void _playerMatchedCorrectly() {
+    _playerScoreList[_currentTurnIndex]++;
+    if (!_gameOver()) {
+      _twoTapsIndex.clear();
+    }
+  }
+
+  bool _gameOver() => _allBoardItems.length == _alreadyFlippedItemsIndex.length;
+
+  Future<void> _playerMatchedIncorrectly() async {
+    await Future.delayed(const Duration(milliseconds: 800));
+    _addToMemoryIfComputer();
+    _flipController[_twoTapsIndex[0]].flip();
+    _flipController[_twoTapsIndex[1]].flip();
+    _alreadyFlippedItemsIndex.remove(_twoTapsIndex[0]);
+    _alreadyFlippedItemsIndex.remove(_twoTapsIndex[1]);
+  }
+
+  void _nextUserTurn() {
+    if (_currentTurnIndex < widget.players.length - 1) {
+      _currentTurnIndex++;
+    } else {
+      _currentTurnIndex = 0;
+    }
+    _animationController.value = 0;
+    // changeBackgroundColor();//Todo: Change background
+    _twoTapsIndex.clear();
+    setState(() {});
+  }
+
+  void _addToMemoryIfComputer() {
+    int index = _twoTapsIndex.last;
+    final player = widget.players[_currentTurnIndex];
+    if (player is Computer) {
+      player
+          .observerTheCard(Memory(index: index, value: _allBoardItems[index]));
     }
   }
 

@@ -46,9 +46,4 @@ String narutoBgm = 'audio/Naruto-Naruto.mp3';
 String noragamiBgm = 'audio/Noragami-Ost-Misogi.mp3';
 String clickSound = 'audio/Click.mp3';
 
-enum Players {
-  player1,
-  player2,
-  // player3,
-  // player4,
-}
+
