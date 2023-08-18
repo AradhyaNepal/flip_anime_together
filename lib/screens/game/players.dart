@@ -40,13 +40,13 @@ class Memory {
 ///The memory keeps expanding as the game continues. With more memories,
 ///computer can easily figure out which Card have which item.
 ///
-///Computer makes its moves from its memory, if its memory have no match then
+///Computer makes moves from its memory, if its memory have no match then
 ///it keeps on expanding its memory by picking new cards to explore the unknown.
 ///
 ///Todo:Computer sometimes gets very emotional and makes some obvious mistake despite its memory.
 ///
 ///Computer expertise is either noob, intermediate, or pro.
-///
+///Todo: More expertise might means that there are less chance of it forgetting its few memories
 ///More expertise means more memory and less mistakes.
 //Todo: Proper encapsulation
 class Computer extends Players {
@@ -54,9 +54,11 @@ class Computer extends Players {
   ComputerExpertise computerExpertise;
   final List<int> availableIndex;
   final BoardController boardController;
+  final List<String> boardImages;
 
 
 
+  ///Todo: Make sure same index are not redundant
   final List<Memory> _computerMemory = [];
 
   void observerTheCard(Memory memory) {
@@ -67,28 +69,22 @@ class Computer extends Players {
     _computerMemory.clear();
   }
 
-  void performMove() {
-    boardController.value = PerformActionEvent(
-      onPerformed: _performMoveTwo,
-      indexPressed: _bestFirstMove(),
-    );
+  void performMove(Future<void> Function(int index) performAction) async{
+    //Performing Move One
+    final moveOneIndex=_bestFirstMove();
+    await performAction(moveOneIndex);//This needs to await, then only perform next move
+    //Performing Move Two
+    performAction(_bestSecondMove(boardImages[moveOneIndex]));
   }
 
-  void _performMoveTwo(Memory moveOneResult) {
-    //Denotes index of the boardItems
-    int bestMoveToPerform=_bestSecondMove(moveOneResult.value);
-    if (bestMoveToPerform == -1) {
-      bestMoveToPerform=_bestFirstMove();
-    }
-    boardController.value=PerformActionEvent(indexPressed: bestMoveToPerform);
-  }
+
 
   int _bestSecondMove(String previousValue){
-    var answerFromMemory =-1;
+    var sendMoveIndex =-1;
     for(int i=0;i<_computerMemory.length-1;i++){//Todo: Not the last verify. Why? Does this work?
       if(_computerMemory[i].value == previousValue){
         if(availableIndex.contains(_computerMemory[i].index)){
-          answerFromMemory=i;
+          sendMoveIndex=i;
           break;
         }else{
           Future.delayed(Duration.zero,(){//Todo: Does this logic work, if yes then you learned today something new
@@ -97,12 +93,12 @@ class Computer extends Players {
         }
       }
     }
-    return answerFromMemory;
+    if (sendMoveIndex == -1) {
+      sendMoveIndex=_bestFirstMove();
+    }
+    return sendMoveIndex;
   }
 
-  ///First from the memory check that whether there are any same two value stored in the memory
-  ///Then tries to click a item which are not known to the computer, to explore the unknown.
-  ///If computer knows all items location then randomly pick an items.
   int _bestFirstMove(){
     var answer=-1;
     //Way 1: Find whether both answer for specific card is saved in memory.
@@ -143,6 +139,7 @@ class Computer extends Players {
     required this.computerExpertise,
     required this.availableIndex,
     required this.boardController,
+    required this.boardImages,
   });
 }
 

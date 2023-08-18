@@ -226,7 +226,7 @@ class _GameBoardState extends State<GameBoard>
   void _mayComputerPerformMove() {
     final player = _currentPlayer;
     if (player is Computer) {
-      player.performMove();
+      player.performMove(_performFlipAction);
     }
   }
 
@@ -277,13 +277,13 @@ class _GameBoardState extends State<GameBoard>
     _performFlipAction(index);
   }
 
-  Future<void> _performFlipAction(int index) async {
+  Future<void> _performFlipAction(int index,) async {
     _flipController[index].flip();
     log(_flipController[index].value.toString(), name: 'flipped');
     _twoTapsIndex.add(index);
     _alreadyFlippedItemsIndex.add(index);
     await _checkIsSecondAndIsAMatch();
-    _nextUserTurn();
+    widget.boardController.value=ActionPerformedEvent(indexPressed: index);
   }
 
   bool _ignoreOnPress(int index) {
@@ -293,7 +293,8 @@ class _GameBoardState extends State<GameBoard>
     return false;
   }
 
-  Future<void> _checkIsSecondAndIsAMatch() async {
+  Future<void> _checkIsSecondAndIsAMatch(
+  ) async {
     if (_itsUserFirstTurn) {
       _addToMemoryIfComputer();
       return;
@@ -303,6 +304,7 @@ class _GameBoardState extends State<GameBoard>
     } else {
       await _playerMatchedIncorrectly();
     }
+    _nextUserTurn();
   }
 
   bool get _itsUserFirstTurn => _twoTapsIndex.length == 1;
@@ -328,6 +330,7 @@ class _GameBoardState extends State<GameBoard>
     _alreadyFlippedItemsIndex.remove(_twoTapsIndex[1]);
   }
 
+  ///Must be called when a user had made its all 2 moves
   void _nextUserTurn() {
     if (_currentTurnIndex < widget.players.length - 1) {
       _currentTurnIndex++;
@@ -374,11 +377,11 @@ class _GameBoardState extends State<GameBoard>
   void _printLogs() {
     log('Build Rebuild. Below are Players scores.');
     log(widget.players.length.toString(), name: 'Number of Players');
-    for(int i=0;i<widget.players.length;i++){
-      log(_playerScoreList[i].toString(), name: 'Player ${i+1} Score');
+    for (int i = 0; i < widget.players.length; i++) {
+      log(_playerScoreList[i].toString(), name: 'Player ${i + 1} Score');
     }
     log(
-      "Player ${_currentTurnIndex+1}'s Turn (${_currentPlayer.name} ${_currentPlayer.runtimeType})",
+      "Player ${_currentTurnIndex + 1}'s Turn (${_currentPlayer.name} ${_currentPlayer.runtimeType})",
       name: "Current Player",
     );
     log(_backgroundColor.toString(), name: 'Background Color');

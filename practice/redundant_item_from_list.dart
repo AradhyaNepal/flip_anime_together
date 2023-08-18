@@ -1,6 +1,8 @@
 //Write a program, which returns
 //redundant value from the list
 
+// ignore_for_file: avoid_print
+
 List<T> findRedundantElements<T>(List<T> list) {
   Set<T> uniqueElements = <T>{};
   Set<T> redundantElements = <T>{};
