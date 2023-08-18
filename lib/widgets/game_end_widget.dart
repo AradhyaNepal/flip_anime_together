@@ -9,51 +9,6 @@ class GameEndWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // return Container(
-    //   color: Theme.of(context).primaryColor,
-    //   child: Row(
-    //     mainAxisSize: MainAxisSize.min,
-    //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-    //     children: [
-    //       Padding(
-    //         padding: EdgeInsets.all(16.w),
-    //         child: Container(
-    //           decoration: const BoxDecoration(
-    //             color: Colors.white,
-    //           ),
-    //           height: MediaQuery.of(context).size.height * 0.12,
-    //           child: FittedBox(
-    //             child: GestureDetector(
-    //               onTap: onMenuTap,
-    //               child: const Icon(
-    //                 Icons.menu,
-    //                 color: Colors.red,
-    //               ),
-    //             ),
-    //           ),
-    //         ),
-    //       ),
-    //       Padding(
-    //         padding: EdgeInsets.all(16.w),
-    //         child: Container(
-    //           decoration: const BoxDecoration(
-    //             color: Colors.white,
-    //           ),
-    //           height: MediaQuery.of(context).size.height * 0.12,
-    //           child: FittedBox(
-    //             child: GestureDetector(
-    //               onTap: onPlayTap,
-    //               child: const Icon(
-    //                 Icons.play_arrow,
-    //                 color: Colors.blue,
-    //               ),
-    //             ),
-    //           ),
-    //         ),
-    //       ),
-    //     ],
-    //   ),
-    // );
     return Container(
       color: Colors.black.withOpacity(0.6),
       child: Column(

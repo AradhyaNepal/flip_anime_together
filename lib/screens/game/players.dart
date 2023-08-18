@@ -35,23 +35,36 @@ class Memory {
   });
 }
 
+
+///Computer have its memory, which observes all the moves made in the game.
+///The memory keeps expanding as the game continues. With more memories,
+///computer can easily figure out which Card have which item.
+///
+///Computer makes its moves from its memory, if its memory have no match then
+///it keeps on expanding its memory by picking new cards to explore the unknown.
+///
+///Todo:Computer sometimes gets very emotional and makes some obvious mistake despite its memory.
+///
+///Computer expertise is either noob, intermediate, or pro.
+///
+///More expertise means more memory and less mistakes.
+//Todo: Proper encapsulation
 class Computer extends Players {
-  Random _random=Random();
+  final Random _random=Random();
   ComputerExpertise computerExpertise;
   final List<int> availableIndex;
   final BoardController boardController;
 
-  //Todo: UseCase
-  //Computer have memory
-  //Computer makes moves from the memory
-  //Computer sometimes makes mistake despite its memory, yet rare
-  //Computer expertise is either noob, intermediate, or pro
-  //More expertise means more memory and less mistake
+
 
   final List<Memory> _computerMemory = [];
 
   void observerTheCard(Memory memory) {
     _computerMemory.add(memory);
+  }
+
+  void clearTheMemory(){
+    _computerMemory.clear();
   }
 
   void performMove() {

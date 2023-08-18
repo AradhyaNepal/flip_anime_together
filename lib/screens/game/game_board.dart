@@ -71,6 +71,7 @@ class _GameBoardState extends State<GameBoard>
   @override
   Widget build(BuildContext context) {
     _printLogs();
+    _mayComputerPerformMove();
     return WillPopScope(
       onWillPop: _onBackPressed,
       child: Scaffold(
@@ -164,10 +165,11 @@ class _GameBoardState extends State<GameBoard>
                   ),
                 ),
                 if (_gameOver) ...[
+                  //Todo: What if both widget goes inside GameEndWidget
                   Center(
                     child: GameEndWidget(
-                      onPlayTap: () => _resetGame(),
-                      onMenuTap: null,
+                      onPlayTap: _resetGame,
+                      onMenuTap: null, //Todo: Remove this
                     ),
                   ),
                   Builder(builder: (context) {
@@ -220,21 +222,35 @@ class _GameBoardState extends State<GameBoard>
     );
   }
 
+  ///Checks whether its computer turn, if yes then make computer move
+  void _mayComputerPerformMove() {
+    final player = _currentPlayer;
+    if (player is Computer) {
+      player.performMove();
+    }
+  }
+
+  Players get _currentPlayer => widget.players[_currentTurnIndex];
+
   void _setInitialScore() {
     _playerScoreList.clear();
     _playerScoreList.addAll([0, 0, 0, 0]);
   }
 
-  void _resetGame() {
-    setState(() {
-      _twoTapsIndex.clear();
-      _flipController.map((e) => e.isFront = true).toList();
-      _currentTurnIndex = 0;
-      _setInitialScore();
-      _allBoardItems.shuffle();
-      _alreadyFlippedItemsIndex.clear();
-    });
+  void _resetGame() async {
+    _twoTapsIndex.clear();
+    _flipController.map((e) => e.isFront = true).toList();
+    _currentTurnIndex = 0;
+    _setInitialScore();
+    _allBoardItems.shuffle();
+    _alreadyFlippedItemsIndex.clear();
     widget.boardController.value = NewGameEvent();
+    for (var player in widget.players) {
+      if (player is Computer) {
+        player.clearTheMemory();
+      }
+    }
+    setState(() {});
   }
 
   Future<bool> _onBackPressed() async {
@@ -257,17 +273,24 @@ class _GameBoardState extends State<GameBoard>
   }
 
   void _onItemPressed(int index) async {
-    if (_incorrectTapsAndAlreadyFlipped(index)) return;
+    if (_ignoreOnPress(index)) return;
+    _performFlipAction(index);
+  }
+
+  Future<void> _performFlipAction(int index) async {
     _flipController[index].flip();
     log(_flipController[index].value.toString(), name: 'flipped');
     _twoTapsIndex.add(index);
     _alreadyFlippedItemsIndex.add(index);
     await _checkIsSecondAndIsAMatch();
+    _nextUserTurn();
   }
 
-  bool _incorrectTapsAndAlreadyFlipped(int index) {
-    return _twoTapsIndex.length >= 2 ||
-        _alreadyFlippedItemsIndex.contains(index);
+  bool _ignoreOnPress(int index) {
+    if (_twoTapsIndex.length >= 2) return true;
+    if (_currentPlayer is Computer) return true;
+    if (_alreadyFlippedItemsIndex.contains(index)) return true;
+    return false;
   }
 
   Future<void> _checkIsSecondAndIsAMatch() async {
@@ -280,7 +303,6 @@ class _GameBoardState extends State<GameBoard>
     } else {
       await _playerMatchedIncorrectly();
     }
-    _nextUserTurn();
   }
 
   bool get _itsUserFirstTurn => _twoTapsIndex.length == 1;
@@ -294,7 +316,8 @@ class _GameBoardState extends State<GameBoard>
     }
   }
 
-  bool get _gameOver => _allBoardItems.length == _alreadyFlippedItemsIndex.length;
+  bool get _gameOver =>
+      _allBoardItems.length == _alreadyFlippedItemsIndex.length;
 
   Future<void> _playerMatchedIncorrectly() async {
     await Future.delayed(const Duration(milliseconds: 800));
@@ -319,7 +342,7 @@ class _GameBoardState extends State<GameBoard>
 
   void _addToMemoryIfComputer() {
     int index = _twoTapsIndex.last;
-    final player = widget.players[_currentTurnIndex];
+    final player = _currentPlayer;
     if (player is Computer) {
       player
           .observerTheCard(Memory(index: index, value: _allBoardItems[index]));
@@ -350,12 +373,14 @@ class _GameBoardState extends State<GameBoard>
 
   void _printLogs() {
     log('Build Rebuild. Below are Players scores.');
-    log(_playerScoreList[0].toString(), name: 'score1');
-    log(_playerScoreList[1].toString(), name: 'score2');
-    log(_playerScoreList[2].toString(), name: 'score3');
-    log(_playerScoreList[3].toString(), name: 'score4');
-    log(widget.players[_currentTurnIndex].name);
-    log(widget.players.length.toString(), name: 'number of players');
-    log(_backgroundColor.toString(), name: 'bg color');
+    log(widget.players.length.toString(), name: 'Number of Players');
+    for(int i=0;i<widget.players.length;i++){
+      log(_playerScoreList[i].toString(), name: 'Player ${i+1} Score');
+    }
+    log(
+      "Player ${_currentTurnIndex+1}'s Turn (${_currentPlayer.name} ${_currentPlayer.runtimeType})",
+      name: "Current Player",
+    );
+    log(_backgroundColor.toString(), name: 'Background Color');
   }
 }
