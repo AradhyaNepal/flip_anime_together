@@ -11,7 +11,7 @@ import '../../widgets/flip_animation.dart';
 import '../../widgets/game_end_widget.dart';
 import '../../widgets/player_widget.dart';
 import 'board_event.dart';
-//Song: My Mind goes salalalala
+//Song: My Mind goes salalalala or Cupid, or both
 
 class GameBoard extends StatefulWidget {
   final BoardController boardController;
@@ -163,8 +163,7 @@ class _GameBoardState extends State<GameBoard>
                     ),
                   ),
                 ),
-                if (_alreadyFlippedItemsIndex.length ==
-                    _allBoardItems.length) ...[
+                if (_gameOver) ...[
                   Center(
                     child: GameEndWidget(
                       onPlayTap: () => _resetGame(),
@@ -290,12 +289,12 @@ class _GameBoardState extends State<GameBoard>
 
   void _playerMatchedCorrectly() {
     _playerScoreList[_currentTurnIndex]++;
-    if (!_gameOver()) {
+    if (!_gameOver) {
       _twoTapsIndex.clear();
     }
   }
 
-  bool _gameOver() => _allBoardItems.length == _alreadyFlippedItemsIndex.length;
+  bool get _gameOver => _allBoardItems.length == _alreadyFlippedItemsIndex.length;
 
   Future<void> _playerMatchedIncorrectly() async {
     await Future.delayed(const Duration(milliseconds: 800));
