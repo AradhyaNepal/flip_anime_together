@@ -57,19 +57,20 @@ class Computer extends Players {
   void performMove() {
     boardController.value = PerformActionEvent(
       onPerformed: _performMoveTwo,
-      indexPressed: 1,//Todo: Calculate the best
+      indexPressed: _bestFirstMove(),
     );
   }
 
   void _performMoveTwo(Memory moveOneResult) {
-    int bestMoveIndexToPerform=_getMoveFromMemory(moveOneResult.value);
-    if (bestMoveIndexToPerform == -1) {
-      bestMoveIndexToPerform=availableIndex[_random.nextInt(availableIndex.length)];//Todo: Something that's not available to the memory to expand the memory
+    //Denotes index of the boardItems
+    int bestMoveToPerform=_bestSecondMove(moveOneResult.value);
+    if (bestMoveToPerform == -1) {
+      bestMoveToPerform=_bestFirstMove();
     }
-    boardController.value=PerformActionEvent(indexPressed: bestMoveIndexToPerform);
+    boardController.value=PerformActionEvent(indexPressed: bestMoveToPerform);
   }
 
-  int _getMoveFromMemory(String previousValue){
+  int _bestSecondMove(String previousValue){
     var answerFromMemory =-1;
     for(int i=0;i<_computerMemory.length-1;i++){//Todo: Not the last verify
       if(_computerMemory[i].value == previousValue){
@@ -84,6 +85,29 @@ class Computer extends Players {
       }
     }
     return answerFromMemory;
+  }
+
+  ///First from the memory check that whether there are any same two value stored in the memory
+  ///Then tries to click a item which are not known to the computer, to explore the unknown.
+  ///If computer knows all items location then randomly pick an items.
+  int _bestFirstMove(){
+    var answer=-1;
+    //Todo: Write a program, which returns redundant value from the list
+    //Start
+    final originalList=_computerMemory.map((e) => e.index).toList();
+    final uniqueList=originalList.toSet().toList();
+    originalList.removeRange(0, 1);
+    //End
+    for(int i=0;i<availableIndex.length;i++){
+      if(_computerMemory.indexWhere((element) => element.index==availableIndex[i])==-1){
+        answer=availableIndex[i];
+        break;
+      }
+    }
+    if(answer==-1){
+      answer=_random.nextInt(availableIndex.length);
+    }
+    return answer;
   }
 
   Computer({

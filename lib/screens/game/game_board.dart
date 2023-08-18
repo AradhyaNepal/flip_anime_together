@@ -234,7 +234,7 @@ class _GameBoardState extends State<GameBoard>
       _allBoardItems.shuffle();
       _alreadyFlippedItemsIndex.clear();
     });
-    widget.boardController.add(NewGameEvent());
+    widget.boardController.value=NewGameEvent();
   }
 
   Future<bool> _onBackPressed() async {
